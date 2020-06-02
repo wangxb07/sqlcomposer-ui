@@ -1,0 +1,99 @@
+info:
+  name: Endproduct stock all
+  version: 1.0.0
+composition:
+  filterPipelines:
+    attrs_text:
+      type: fulltext
+      params:
+        - name: fields
+          value:
+            - product_spec
+            - product_unit_weight
+            - product_material
+            - product_hardness
+            - product_perform_level
+            - product_surface_treat
+  tokens:
+    attrs:
+      params:
+        - name: prod-weight
+          value: product_unit_weight
+        - name: prod-material
+          value: product_material
+        - name: prod-hardness
+          value: product_hardness
+        - name: prod-perform-level
+          value: product_perform_level
+        - name: prod-surface-treat
+          value: product_surface_treat
+    attrs_fields:
+      params:
+        - name: prod-weight
+          value: product_unit_weight
+        - name: prod-material
+          value: product_material
+        - name: prod-hardness
+          value: product_hardness
+        - name: prod-perform-level
+          value: product_perform_level
+        - name: prod-surface-treat
+          value: product_surface_treat
+  fields:
+    base:
+      - name: plan_no
+        expr: fty_plan_package.plan_no
+      - name: order_no
+        expr: fty_plan_package.order_no
+      - name: prod_name
+        expr: fty_plan_package.prod_name
+      - name: prod_sid
+        expr: fty_plan_package.prod_sid
+      - name: cust_material_no
+        expr: fty_plan_package.cust_material_no
+      - name: customer_sid
+        expr: fty_customer.sid
+      - name: cust_short_name
+        expr: fty_customer.cust_short_name
+      - name: product_spec
+        expr: fty_product.product_spec
+    statistic:
+      - name: stock_package_amount
+        expr: >
+          (SELECT (count(fty_stock_in.sid) - count(fty_stock_out.sid)) t
+             FROM fty_plan_package
+                    RIGHT JOIN fty_stock_in ON fty_stock_in.plan_package_sid = fty_plan_package.sid
+                    LEFT JOIN fty_stock_out ON fty_stock_out.plan_package_sid = fty_plan_package.sid
+             WHERE fty_plan_package.prod_sid = t.prod_sid
+             GROUP BY fty_plan_package.prod_sid)
+      - name: stock_unit_amount
+        expr: >
+          (SELECT SUM(fty_plan_package.product_amount) -
+                  SUM(CASE WHEN fty_stock_out.sid IS NOT NULL THEN fty_plan_package.product_amount else 0 END)
+           FROM fty_plan_package
+                  RIGHT JOIN fty_stock_in ON fty_stock_in.plan_package_sid = fty_plan_package.sid
+                  LEFT JOIN fty_stock_out ON fty_stock_out.plan_package_sid = fty_plan_package.sid
+           WHERE fty_plan_package.prod_sid = t.prod_sid
+           GROUP BY fty_plan_package.prod_sid)
+  subject:
+    list: >
+      SELECT *,
+      %fields.statistic
+      FROM (
+      SELECT %fields.base, %attrs_fields
+          FROM fty_product
+              RIGHT JOIN fty_plan_package ON fty_product.sid = fty_plan_package.prod_sid
+              RIGHT JOIN fty_stock_in ON fty_stock_in.plan_package_sid = fty_plan_package.sid
+              LEFT JOIN fty_product_cust_attr ON fty_product_cust_attr.sid = fty_plan_package.product_cust_attr_sid
+              LEFT JOIN fty_customer ON fty_customer.sid = fty_product_cust_attr.cust_sid
+              %attrs GROUP BY fty_product.sid, fty_customer.sid) AS t %where %limit
+    total: >
+      SELECT COUNT(t.prod_sid)
+      FROM (
+      SELECT %fields.base, %attrs_fields
+          FROM fty_product
+              RIGHT JOIN fty_plan_package ON fty_product.sid = fty_plan_package.prod_sid
+              RIGHT JOIN fty_stock_in ON fty_stock_in.plan_package_sid = fty_plan_package.sid
+              LEFT JOIN fty_product_cust_attr ON fty_product_cust_attr.sid = fty_plan_package.product_cust_attr_sid
+              LEFT JOIN fty_customer ON fty_customer.sid = fty_product_cust_attr.cust_sid
+              %attrs GROUP BY fty_product.sid, fty_customer.sid) AS t %where
