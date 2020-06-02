@@ -1,4 +1,6 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Sqlcomposer ui
+
+the editor ui  for sqlcompose package https://github.com/wangxb07/sqlcomposer
 
 ## Available Scripts
 
