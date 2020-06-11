@@ -1,8 +1,8 @@
 import React from 'react';
 
-import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
+import {Route, Link, Switch,withRouter} from 'react-router-dom';
 
-import {Button, Layout, Menu} from 'antd';
+import {Layout, Menu} from 'antd';
 import './App.css'
 import {
   DesktopOutlined,
@@ -10,26 +10,8 @@ import {
 } from '@ant-design/icons';
 import DocList from "./page/doclist";
 import DbConfigList from "./page/dbconfig";
-//router
-const routes = [
-  {
-    path: "/doclist",
-    exact: true,
-    main: () => <DocList/>
-  },
-  {
-    path: "/dbconfig",
-    main: () => <DbConfigList/>
-  },
-  {
-    path: "/about",
-    main: () => <h2>about</h2>
-  }
-];
-
 
 const {Header, Content, Footer, Sider} = Layout;
-
 
 class App extends React.Component<any, any> {
   baseUrl = process.env.REACT_APP_API_URL
@@ -90,24 +72,15 @@ class App extends React.Component<any, any> {
             <Content style={{margin: '0 16px'}}>
               <br/>
               <Switch>
-                {routes.map((route, index) => (
-                  // Render more <Route>s with the same paths as
-                  // above, but different components this time.
-                  <Route
-                    key={index}
-                    path={route.path}
-                    exact={route.exact}
-                    children={<route.main/>}
-                  />
-                ))}
+                <Route key="doclist" exact={true} path="/doclist" component={DocList}/>
+                <Route key="dblist" exact={true} path="/dbconfig" component={DbConfigList} />
+                <Route key="about" exact={true} path="/" component={DocList} />
               </Switch>
 
             </Content>
             <Footer style={{textAlign: 'center'}}>Ant Design ©2018 Created by Ant UED</Footer>
           </Layout>
         </Layout>
-        <Button type="primary">Button</Button>
-
       </div>
     );
   }

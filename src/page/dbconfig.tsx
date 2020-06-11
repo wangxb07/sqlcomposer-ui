@@ -29,7 +29,7 @@ class DbConfigList extends React.Component<any, IState> {
       updateConfigBody: {
         dsn: ""
       },
-      isChanged: false
+      isChanged: false,
     }
   }
 
@@ -166,7 +166,6 @@ class DbConfigList extends React.Component<any, IState> {
 
           </Col>
           <Col className="gutter-row" span={10}>
-
 
             {
               this.state.dbConfigList.map((dbConfig) => {

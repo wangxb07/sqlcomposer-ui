@@ -112,6 +112,7 @@ class DocList extends React.Component<any, IState> {
           currentContent: r.content,
           apiPath: r.path
         })
+
       })
     }
 
@@ -137,21 +138,27 @@ class DocList extends React.Component<any, IState> {
   }
 
   deleteDoc = (uuid: string) => {
-    //docDetail
-    fetch(this.baseUrl + '/doc/' + uuid, {
-      method: "delete",
+    console.log(uuid)
+    if (uuid !== this.query.get('uuid')) {
+      //docDetail
+      fetch(this.baseUrl + '/doc/' + uuid, {
+        method: "delete",
 
-    }).then((r) => (
-      r.text()
-    )).then(r => {
-      message
-        .loading("deleting...", 0.5)
-        .then(() => {
+      }).then((r) => (
+        r.text()
+      )).then(r => {
+        message
+          .loading("deleting...", 0.5)
+          .then(() => {
 
-          window.location.reload(false)
-        }, () => {
-        })
-    })
+            window.location.reload(false)
+          }, () => {
+          })
+      })
+    }else{
+      message.error("这个文档正在编辑，无法删除！")
+    }
+
 
   }
   saveDoc = () => {
@@ -164,26 +171,34 @@ class DocList extends React.Component<any, IState> {
       body: formData
     }).then((r) => (
       r.text()
-    )).then(r => {
-      message.info(r).then(() => {
-        window.location.reload(false)
-      }, () => {
-      })
+    )).then(uuid => {
+      // message.info(r).then(() => {
+      //   window.location.reload(false)
+      // }, () => {
+      // })
+      //todo 跳转
+      window.location.href = "/doclist?uuid=" + uuid
+
     })
   }
   updateDoc = () => {
-    const formData = new FormData()
-    formData.append('content', this.state.currentContent)
-    formData.append('path', this.state.apiPath)
-    //docDetail
-    fetch(this.baseUrl + '/doc/' + this.state.docDetail.uuid, {
-      method: "POST",
-      body: formData
-    }).then((r) => (
-      r.text()
-    )).then(r => {
-      message.info(r)
-    })
+    if (this.query.get('uuid') == null) {
+      this.saveDoc()
+    } else {
+      const formData = new FormData()
+      formData.append('content', this.state.currentContent)
+      formData.append('path', this.state.apiPath)
+      //docDetail
+      fetch(this.baseUrl + '/doc/' + this.state.docDetail.uuid, {
+        method: "POST",
+        body: formData
+      }).then((r) => (
+        r.text()
+      )).then(r => {
+        message.info(r)
+      })
+    }
+
   }
   changeNowDoc = (newValue: any) => {
     console.log(newValue)
@@ -237,14 +252,16 @@ class DocList extends React.Component<any, IState> {
                   </Panel>
                 )
               })}
+
             </Collapse>
+            <br/>
+            <Link to="/"> <Button type="primary">新增文档</Button></Link>
           </Col>
 
           <Col className="gutter-row" span={12}>
             <div>
               <div className="yml-editor"><h2><span></span> <Button onClick={this.updateDoc}>保存</Button>
 
-                <Button onClick={this.saveDoc}>新增</Button>
                 <Input className="api-path-input" placeholder="输入接口路径..." onChange={this.apiPathInputChanged.bind(this)}
                        value={this.state.apiPath}/>
                 <Button onClick={this.getResult.bind(this)}>查看查询结果</Button>
@@ -300,7 +317,6 @@ class DocList extends React.Component<any, IState> {
 
 
               </div>
-
 
 
             </div>
