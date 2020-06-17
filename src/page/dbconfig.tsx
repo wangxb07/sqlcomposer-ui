@@ -34,17 +34,7 @@ class DbConfigList extends React.Component<any, IState> {
   }
 
   componentDidMount(): void {
-    //dbConfig list
-    fetch(this.baseUrl + '/dbconfig', {
-      method: "get",
-    }).then((r) => (
-      r.json()
-    )).then(r => {
-      console.log(r)
-      this.setState({
-        dbConfigList: r.data
-      })
-    })
+
   }
 
   deleteByUuid = (uuid: string) => {

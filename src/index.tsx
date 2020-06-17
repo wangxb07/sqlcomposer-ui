@@ -1,14 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import {BrowserRouter as Router, Route, Link, Switch} from 'react-router-dom';
 import App from './App';
+import {Provider} from "react-redux";
+import {store, history} from './store';
 
 ReactDOM.render(
-  <Router>
-    <div className="App">
-      <App />
-    </div>
-  </Router>,
+  <Provider store={store}>
+    <App history={history}/>
+  </Provider>,
   document.getElementById('root')
 );
