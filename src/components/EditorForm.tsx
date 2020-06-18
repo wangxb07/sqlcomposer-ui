@@ -175,4 +175,4 @@ const EditorForm: FC<Props> = (
 };
 
 // @ts-ignore
-export default connect(mapState, mapDispatch)(EditorForm)
+export default connect(mapState, mapDispatch)(EditorForm);

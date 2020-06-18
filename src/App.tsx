@@ -6,8 +6,7 @@ import './App.css'
 import {
   FileOutlined,
 } from '@ant-design/icons';
-import DocEditor from "./page/DocEditor";
-import DbConfigList from "./page/dbconfig";
+import DocMain from "./page/DocMain";
 import {Dispatch, iRootState} from "./store";
 import {connect} from 'react-redux';
 import {ArgsProps} from "antd/lib/notification";
@@ -55,15 +54,13 @@ class App extends React.Component<Props> {
               <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} style={{
                 lineHeight: "50px",
               }}>
-                <Menu.Item key="1" icon={<FileOutlined/>}><Link to="/docs">Sql Composer</Link></Menu.Item>
-                <Menu.Item key="2" icon={<FileOutlined/>}><Link to="#">Analysis</Link></Menu.Item>
+                <Menu.Item key="1" icon={<FileOutlined/>}><Link to="/">Sql Composer</Link></Menu.Item>
               </Menu>
             </Header>
 
             <Layout className="site-layout">
               <Switch>
-                <Route key="docs" path="/docs" exact={false} component={DocEditor}/>
-                <Route key="docs" path="/databases" exact={true} component={DbConfigList}/>
+                <Route key="docs" path="/" exact={false} component={DocMain}/>
               </Switch>
             </Layout>
           </Layout>

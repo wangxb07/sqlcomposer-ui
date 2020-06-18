@@ -1,5 +1,5 @@
 import {Dispatch} from "./store";
-import {deleteDoc, getDoc, getDocList, postDoc, saveDoc} from "./api";
+import {deleteDoc, getDoc, getDocList, postDoc, saveDoc, getDNSList, getDNS, postDNS, saveDNS, deleteDNS} from "./api";
 import {ArgsProps} from "antd/lib/notification";
 import {createModel, ModelConfig} from "@rematch/core";
 
@@ -222,6 +222,189 @@ const doc: ModelConfig = createModel<DocState>({
   })
 });
 
+interface DNSState {
+  list: Array<any>
+  drawerFormVisible: boolean
+  formFields: FieldData[]
+  loading: boolean
+}
+
+const dns: ModelConfig = createModel<DNSState>({
+  state: {
+    list: [],
+    drawerFormVisible: false,
+    formFields: [],
+    loading: false
+  },
+  reducers: {
+    loaded: (state: DocState, list: any) => {
+      return {
+        ...state,
+        list,
+        loading: false
+      }
+    },
+    showAddForm: (state: DocState) => {
+      return {
+        ...state,
+        drawerFormVisible: true,
+        formFields: []
+      }
+    },
+    hideAddForm: (state: DocState) => {
+      return {
+        ...state,
+        drawerFormVisible: false,
+        formFields: []
+      }
+    },
+    edit: (state: DocState, doc: any) => {
+      return {
+        ...state,
+        drawerFormVisible: true,
+        formFields: Object.keys(doc).map((k: string) => {
+          return {
+            name: [k],
+            value: doc[k],
+          };
+        }),
+      }
+    },
+    removeItem: (state: DocState, uuid: string) => {
+      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid );
+      return {
+        ...state,
+        list
+      }
+    },
+    fillFormFields: (state: DocState, doc: any) => ({
+      ...state,
+      formFields: Object.keys(doc).map((k: string) => {
+        return {
+          name: [k],
+          value: doc[k],
+        };
+      }),
+    }),
+    clearFormFields: (state: DocState) => {
+      const formFields: FieldData[] = [];
+      return {
+        ...state,
+        formFields
+      }
+    },
+    showLoading: (state: DocState) => ({
+      ...state,
+      loading: true
+    }),
+    hideLoading: (state: DocState) => ({
+      ...state,
+      loading: false
+    }),
+  },
+  // @ts-ignore
+  effects: (dispatch: Dispatch) => ({
+    async load() {
+      let res: any = {};
+      try {
+        res = await getDNSList();
+      } catch (e) {
+        dispatch.msgbox.notification({
+          message: "DNS list fetch failure",
+          description: "Please check the Network and try again"
+        })
+      }
+
+      if (res && res.data && res.data.data) {
+        dispatch.dns.loaded(res.data.data)
+      }
+    },
+    async get(uuid: string) {
+      let res: any = {};
+
+      try {
+        res = await getDNS(uuid);
+      }
+      catch (e) {
+        dispatch.msgbox.notification({
+          message: "DNS fetch failure",
+          description: "Please check the Network and try again"
+        })
+      }
+
+      if (res && res.data) {
+        dispatch.dns.setdns(res.data)
+      }
+    },
+    async post(data: FormData) {
+      dispatch.dns.showLoading();
+      try {
+        const res = await postDNS(data);
+        dispatch.dns.hideLoading();
+      }
+      catch (e) {
+        if (e.data.code) {
+          dispatch.msgbox.notification({
+            message: "DNS add failure",
+            description: e.data.message
+          });
+        }
+        dispatch.dns.hideLoading();
+        return
+      }
+
+      await dispatch.dns.load();
+      dispatch.dns.hideLoading();
+      dispatch.dns.clearFormFields();
+      dispatch.dns.hideAddForm();
+    },
+    async save(payload: any, state: any) {
+      let res: any = {};
+      dispatch.dns.showLoading();
+
+      try {
+        res = await saveDNS(payload.data, payload.uuid)
+      } catch (e) {
+        if (e.data.code) {
+          dispatch.msgbox.notification({
+            message: "DNS save failure",
+            description: e.data.message
+          });
+        }
+        dispatch.dns.hideLoading();
+        return
+      }
+
+      if (res && res.data) {
+        dispatch.dns.setdns(res.data)
+      }
+      dispatch.dns.hideLoading();
+    },
+    async delete(uuid: string) {
+      let res: any = {};
+      dispatch.dns.showLoading();
+      try {
+        res = await deleteDNS(uuid);
+      } catch (e) {
+        if (e.data.code) {
+          dispatch.msgbox.notification({
+            message: "DNS save failure",
+            description: e.data.message
+          });
+        }
+        dispatch.dns.hideLoading();
+        return
+      }
+
+      if (res && res.data) {
+        dispatch.dns.removeItem(uuid);
+      }
+      dispatch.dns.hideLoading();
+    },
+  })
+});
+
+
 interface MsgBoxState {
   show: boolean
   msg: ArgsProps
@@ -243,7 +426,8 @@ const msgbox: ModelConfig = createModel<MsgBoxState>({
 // no need to extend from Models
 export interface RootModel {
   doc: typeof doc,
+  dns: typeof dns,
   msgbox: typeof msgbox,
 }
 
-export const models: RootModel = {doc, msgbox};
+export const models: RootModel = {doc, dns, msgbox};

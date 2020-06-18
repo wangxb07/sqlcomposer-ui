@@ -3,47 +3,48 @@ import {Layout, Collapse, Button} from "antd";
 
 import DocList from "../components/DocList";
 import EditorForm from "../components/EditorForm";
-import {FileAddOutlined} from '@ant-design/icons';
+import {FileAddOutlined, PlusSquareOutlined} from '@ant-design/icons';
 import {Dispatch, iRootState} from "../store";
 import {connect} from 'react-redux';
 import {Route} from "react-router";
+import DNSList from "../components/DNSList";
 
 const {Sider, Content} = Layout;
 const {Panel} = Collapse;
 
 interface DocEditorState {
-  collapsible: boolean
-  collapsed: boolean
 }
 
 const mapState = (state: iRootState) => ({});
 
 const mapDispatch = (dispatch: Dispatch) => ({
-  showAddForm: dispatch.doc.showAddForm,
-  hideAddForm: dispatch.doc.hideAddForm,
-  clearFormFields: dispatch.doc.clearFormFields,
+  showDocAddForm: dispatch.doc.showAddForm,
+  showDNSAddForm: dispatch.dns.showAddForm,
+  clearDocFormFields: dispatch.doc.clearFormFields,
+  clearDNSFormFields: dispatch.dns.clearFormFields,
 });
 
 type connectedProps = ReturnType<typeof mapState> &
   ReturnType<typeof mapDispatch>
 type Props = connectedProps
 
-class DocEditor extends React.Component<Props, DocEditorState> {
-  state = {
-    collapsible: false,
-    collapsed: false
+class DocMain extends React.Component<Props, DocEditorState> {
+  handleDocAddClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    this.props.clearDocFormFields();
+    this.props.showDocAddForm();
   };
 
-  handleAddClick = (e: MouseEvent) => {
+  handleDNSAddClick = (e: MouseEvent) => {
     e.stopPropagation();
-    this.props.clearFormFields();
-    this.props.showAddForm();
+    this.props.clearDNSFormFields();
+    this.props.showDNSAddForm();
   };
 
   render() {
     return (
       <Layout hasSider={true}>
-        <Sider theme="light" width={300} collapsible={this.state.collapsible} collapsed={this.state.collapsed}>
+        <Sider theme="light" width={300}>
           <Collapse defaultActiveKey={['1']}>
             <Panel
               header="Documents"
@@ -52,16 +53,25 @@ class DocEditor extends React.Component<Props, DocEditorState> {
                 type="default"
                 shape="round"
                 size="small"
-                onClick={this.handleAddClick}
+                onClick={this.handleDocAddClick}
                 icon={<FileAddOutlined/>}/>}>
               <DocList/>
             </Panel>
-            <Panel header="DNS" key="2">
+            <Panel
+              header="DNS"
+              key="2"
+              extra={<Button
+                type="default"
+                shape="round"
+                size="small"
+                onClick={this.handleDNSAddClick}
+                icon={<PlusSquareOutlined/>}/>}>
+              <DNSList/>
             </Panel>
           </Collapse>
         </Sider>
         <Content>
-          <Route path="/docs/:id" component={EditorForm} />
+          <Route path="/docs/:id" component={EditorForm}/>
         </Content>
       </Layout>
     )
@@ -69,4 +79,4 @@ class DocEditor extends React.Component<Props, DocEditorState> {
 }
 
 // @ts-ignore
-export default connect(mapState, mapDispatch)(DocEditor)
+export default connect(mapState, mapDispatch)(DocMain)

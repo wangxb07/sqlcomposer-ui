@@ -1,41 +1,31 @@
 import React, {Component} from "react";
-import {deleteDoc} from "../api";
-import {Button, Drawer, Form, Col, Row, Input, Menu} from "antd";
-import {Link} from "react-router-dom";
+import {Button, Input, Menu, Popconfirm} from "antd";
 import {iRootState, Dispatch} from "../store";
 import {connect} from "react-redux";
-import DocForm from './DocForm'
+import DNSForm from "./DNSForm";
+
+import {DeleteOutlined} from '@ant-design/icons';
 
 const Search = Input.Search;
 
-interface DocIdentity {
-  name: string
-  path: string
-  uuid: string
-}
-
 const mapState = (state: iRootState) => ({
-  docs: state.doc.list,
-  drawerFormVisible: state.doc.drawerFormVisible
+  docs: state.dns.list,
+  drawerFormVisible: state.dns.drawerFormVisible
 });
 
 const mapDispatch = (dispatch: Dispatch) => ({
-  showAddForm: dispatch.doc.showAddForm,
-  hideAddForm: dispatch.doc.hideAddForm,
-  loadDocList: dispatch.doc.load,
-  postDoc: dispatch.doc.post,
+  showAddForm: dispatch.dns.showAddForm,
+  hideAddForm: dispatch.dns.hideAddForm,
+  deleteDNS: dispatch.dns.delete,
+  loadDocList: dispatch.dns.load,
+  postDoc: dispatch.dns.post,
 });
 
 type connectedProps = ReturnType<typeof mapState> &
   ReturnType<typeof mapDispatch>
 type Props = connectedProps
 
-export class DocList extends Component<Props> {
-  state = {
-    docs: [],
-    drawerFormVisible: false
-  };
-
+export class DNSList extends Component<Props> {
   componentDidMount(): void {
     this.props.loadDocList()
   }
@@ -64,8 +54,8 @@ export class DocList extends Component<Props> {
         <div style={{
           textAlign: "center"
         }}>
-          <h4>No sql composer document found</h4>
-          <Button type="primary" onClick={this.onDrawerFormShow}>Create a new document</Button>
+          <h4>No DNS found</h4>
+          <Button type="primary" onClick={this.onDrawerFormShow}>Create a new DNS</Button>
         </div>
       </div>
     );
@@ -78,13 +68,24 @@ export class DocList extends Component<Props> {
           style={{width: '100%'}}
         />
         <Menu theme="light">
-          {this.props.docs.map((doc: DocIdentity) => (
-            <Menu.Item key={doc.uuid}>
-              <Link to={`/docs/${doc.uuid}`}>
-              <span style={{
-                textDecoration: "underline"
-              }}>{doc.path}</span> | {doc.name}
-              </Link>
+          {this.props.docs.map((dns: any) => (
+            <Menu.Item key={dns.uuid}>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                {dns.name}
+                <Popconfirm placement="top" title="Delete confirm?" onConfirm={() => this.props.deleteDNS(dns.uuid)}
+                            okText="Yes" cancelText="No">
+                  <Button
+                    size="small"
+                    type="default"
+                    shape="round"
+                    icon={<DeleteOutlined/>}
+                  />
+                </Popconfirm>
+              </div>
             </Menu.Item>)
           )}
         </Menu>
@@ -94,7 +95,7 @@ export class DocList extends Component<Props> {
     return (
       <div>
         {this.props.docs.length === 0 ? (empty) : (list)}
-        <DocForm onClose={this.onDrawerFormClose}
+        <DNSForm onClose={this.onDrawerFormClose}
                  visible={this.props.drawerFormVisible}
                  onFinishFailed={this.onFormFinishFailed}/>
       </div>
@@ -103,4 +104,4 @@ export class DocList extends Component<Props> {
 }
 
 // @ts-ignore
-export default connect(mapState, mapDispatch)(DocList)
+export default connect(mapState, mapDispatch)(DNSList)
