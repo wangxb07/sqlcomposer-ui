@@ -59,6 +59,7 @@ class DocMain extends React.Component<Props, DocEditorState> {
             </Panel>
             <Panel
               header="DNS"
+              forceRender={true}
               key="2"
               extra={<Button
                 type="default"

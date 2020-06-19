@@ -7,9 +7,7 @@ axios.interceptors.response.use((response) => {
   return response;
 }, function (error) {
   // Do something with response error
-  if (error.response.status === 400) {
-    return Promise.reject(error.response);
-  }
+  return Promise.reject(error.response);
 });
 
 export function getDocList() {
@@ -50,4 +48,8 @@ export function saveDNS(data: FormData, uuid: string) {
 
 export function deleteDNS(uuid: string) {
   return axios.delete(`/dns/${uuid}`)
+}
+
+export function query(path: string, filters: any) {
+  return axios.post(path, filters)
 }

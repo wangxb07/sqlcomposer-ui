@@ -1,5 +1,17 @@
 import {Dispatch} from "./store";
-import {deleteDoc, getDoc, getDocList, postDoc, saveDoc, getDNSList, getDNS, postDNS, saveDNS, deleteDNS} from "./api";
+import {
+  deleteDoc,
+  getDoc,
+  getDocList,
+  postDoc,
+  saveDoc,
+  getDNSList,
+  getDNS,
+  postDNS,
+  saveDNS,
+  deleteDNS,
+  query
+} from "./api";
 import {ArgsProps} from "antd/lib/notification";
 import {createModel, ModelConfig} from "@rematch/core";
 
@@ -77,7 +89,7 @@ const doc: ModelConfig = createModel<DocState>({
       }
     },
     removeItem: (state: DocState, uuid: string) => {
-      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid );
+      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid);
       return {
         ...state,
         list
@@ -137,8 +149,7 @@ const doc: ModelConfig = createModel<DocState>({
 
       try {
         res = await getDoc(uuid);
-      }
-      catch (e) {
+      } catch (e) {
         dispatch.msgbox.notification({
           message: "Document fetch failure",
           description: "Please check the Network and try again"
@@ -154,8 +165,7 @@ const doc: ModelConfig = createModel<DocState>({
       try {
         const res = await postDoc(data);
         dispatch.doc.hideLoading();
-      }
-      catch (e) {
+      } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
             message: "Document add failure",
@@ -271,7 +281,7 @@ const dns: ModelConfig = createModel<DNSState>({
       }
     },
     removeItem: (state: DocState, uuid: string) => {
-      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid );
+      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid);
       return {
         ...state,
         list
@@ -324,8 +334,7 @@ const dns: ModelConfig = createModel<DNSState>({
 
       try {
         res = await getDNS(uuid);
-      }
-      catch (e) {
+      } catch (e) {
         dispatch.msgbox.notification({
           message: "DNS fetch failure",
           description: "Please check the Network and try again"
@@ -341,8 +350,7 @@ const dns: ModelConfig = createModel<DNSState>({
       try {
         const res = await postDNS(data);
         dispatch.dns.hideLoading();
-      }
-      catch (e) {
+      } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
             message: "DNS add failure",
@@ -404,6 +412,108 @@ const dns: ModelConfig = createModel<DNSState>({
   })
 });
 
+interface Filter {
+  attr: string
+  op: string
+  val: any
+}
+
+interface ExexutorRequestParams {
+  filters: Filter[]
+  page_index: number
+  page_limit: number
+}
+
+interface ExecutorState {
+  loading: boolean
+  params: ExexutorRequestParams
+  result: any
+  paramsContent: string
+}
+
+let timeout: NodeJS.Timeout;
+
+const defaultParams = {
+  filters: [],
+  page_index: 1,
+  page_limit: 10
+};
+
+const executor: ModelConfig = createModel<ExecutorState>({
+  state: {
+    loading: false,
+    params: defaultParams,
+    paramsContent: JSON.stringify(defaultParams),
+    result: {}
+  },
+  reducers: {
+    updateParams: (state: ExecutorState, params: ExexutorRequestParams) => {
+      return {
+        ...state,
+        params
+      }
+    },
+    updateParamsContent: (state: ExecutorState, paramsContent: string) => {
+      return {
+        ...state,
+        paramsContent
+      }
+    },
+    showLoading: (state: ExecutorState) => ({
+      ...state,
+      loading: true
+    }),
+    hideLoading: (state: ExecutorState) => ({
+      ...state,
+      loading: false
+    }),
+    updateResult: (state: ExecutorState, result: any) => ({
+      ...state,
+      result
+    }),
+  },
+  // @ts-ignore
+  effects: (dispatch: Dispatch) => ({
+    async updateQueryParams(content: string, state: any) {
+      dispatch.executor.updateParamsContent(content);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        try {
+          const parsed = JSON.parse(content);
+          dispatch.executor.updateParams(parsed)
+        } catch (e) {
+          dispatch.msgbox.notification({
+            message: "Run query failure",
+            description: "Query parameters parse to json failure" + e
+          });
+        }
+      }, 1200)
+    },
+    async query(path, state: any) {
+      let res: any = {};
+      dispatch.executor.showLoading();
+
+      try {
+        // TODO prefix path 需要放到配置中去
+        res = await query(`/beehplus/sql-compose/1.0.0${path}?debug=1`, state.executor.params)
+      } catch (e) {
+        if (e.data.code) {
+          dispatch.msgbox.notification({
+            message: "Run query failure",
+            description: e.data.message
+          });
+        }
+        dispatch.executor.hideLoading();
+        return
+      }
+
+      if (res && res.data) {
+        dispatch.executor.updateResult(res.data)
+      }
+      dispatch.executor.hideLoading();
+    }
+  })
+});
 
 interface MsgBoxState {
   show: boolean
@@ -428,6 +538,7 @@ export interface RootModel {
   doc: typeof doc,
   dns: typeof dns,
   msgbox: typeof msgbox,
+  executor: typeof executor,
 }
 
-export const models: RootModel = {doc, dns, msgbox};
+export const models: RootModel = {doc, dns, msgbox, executor};

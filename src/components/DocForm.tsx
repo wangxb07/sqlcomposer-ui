@@ -1,9 +1,10 @@
 import React from "react";
-import {Button, Col, Drawer, Form, Input, Row} from "antd";
+import {Button, Col, Drawer, Form, Input, Row, Select} from "antd";
 import {Dispatch, iRootState} from "../store";
 import {connect} from "react-redux";
 import {FieldData} from "../models";
 
+const { Option } = Select;
 const FormItem = Form.Item;
 
 interface DrawerFormProps {
@@ -15,7 +16,8 @@ interface DrawerFormProps {
 
 const mapState = (state: iRootState) => ({
   fields: state.doc.formFields,
-  loading: state.doc.loading
+  loading: state.doc.loading,
+  DNSList: state.dns.list
 });
 
 const mapDispatch = (dispatch: Dispatch) => ({
@@ -38,9 +40,11 @@ const DocForm: React.FC<Props> = (
     post,
     save,
     fields,
-    loading
+    loading,
+    DNSList
   }) => {
   const [form] = Form.useForm();
+
   return (
     <Drawer
       title="Create a new document"
@@ -113,7 +117,9 @@ const DocForm: React.FC<Props> = (
               label="Database"
               rules={[{required: true, message: 'Please select database'}]}
             >
-              <Input placeholder="Please select database"/>
+              <Select placeholder="Please select database">
+                {DNSList.map((dns: any) => (<Option value={dns.name} >{dns.name}</Option>))}
+              </Select>
             </FormItem>
           </Col>
         </Row>
