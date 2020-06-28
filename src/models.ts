@@ -495,7 +495,7 @@ const executor: ModelConfig = createModel<ExecutorState>({
 
       try {
         // TODO prefix path 需要放到配置中去
-        res = await query(`/beehplus/sql-compose/1.0.0${path}?debug=1`, state.executor.params)
+        res = await query(`${process.env.REACT_APP_RESULT_URL_PREFIX}${path}?debug=1`, state.executor.params)
       } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
