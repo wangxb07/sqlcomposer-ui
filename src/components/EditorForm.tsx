@@ -14,7 +14,7 @@ import ReactJson from 'react-json-view'
 
 const mapState = (state: iRootState) => ({
   doc: state.doc.doc,
-  loading: state.doc.loading || state.dns.loading,
+  loading: state.doc.loading || state.dsn.loading,
   queryLoading: state.executor.loading,
   queryParams: state.executor.paramsContent,
   result: state.executor.result
@@ -53,7 +53,7 @@ const EditorForm: FC<Props> = (
   const {id} = useParams();
 
   useEffect(() => {
-    if (!doc.uuid || doc.uuid !== id) {
+    if (!doc.id || doc.id != id) {
       getDoc(id)
     }
   });
@@ -78,18 +78,12 @@ const EditorForm: FC<Props> = (
                   }}>
                     <Space>
                       <Button type="primary" size="small" onClick={() => {
-                        const formData = new FormData();
-
-                        Object.keys(doc).forEach(k => {
-                          formData.append(k, doc[k])
-                        });
-
-                        saveDoc({data: formData, uuid: doc.uuid});
+                        saveDoc({data: {content: doc.content}, id: doc.id});
                       }} loading={loading}>Save</Button>
                       <Button type="default" size="small" onClick={() => {
                         editDoc(doc)
                       }} loading={loading}>Edit</Button>
-                      <Popconfirm placement="top" title="Delete confirm?" onConfirm={() => deleteDoc(doc.uuid)}
+                      <Popconfirm placement="top" title="Delete confirm?" onConfirm={() => deleteDoc(doc.id)}
                                   okText="Yes" cancelText="No">
                         <Button type="default" size="small" loading={loading}>Delete</Button>
                       </Popconfirm>

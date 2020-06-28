@@ -17,14 +17,14 @@ interface DrawerFormProps {
 const mapState = (state: iRootState) => ({
   fields: state.doc.formFields,
   loading: state.doc.loading,
-  DNSList: state.dns.list
+  DSNList: state.dsn.list
 });
 
 const mapDispatch = (dispatch: Dispatch) => ({
   post: dispatch.doc.post,
-  save: (formData: FormData, uuid: string) => {
+  save: (data: any, id: string) => {
     dispatch.doc.save({
-      data: formData, uuid
+      data, id
     })
   }
 });
@@ -41,7 +41,7 @@ const DocForm: React.FC<Props> = (
     save,
     fields,
     loading,
-    DNSList
+    DSNList
   }) => {
   const [form] = Form.useForm();
 
@@ -68,18 +68,12 @@ const DocForm: React.FC<Props> = (
               form
                 .validateFields()
                 .then(values => {
-                  const formData = new FormData();
-
-                  Object.keys(values).forEach(k => {
-                    formData.append(k, values[k])
-                  });
-
-                  const uuidIndex = fields.findIndex((f: FieldData) => (f.name[0] === 'uuid' && f.value))
+                  const uuidIndex = fields.findIndex((f: FieldData) => (f.name[0] === 'id' && f.value))
 
                   if (uuidIndex < 0) {
-                    post(formData);
+                    post(values);
                   } else {
-                    save(formData, fields[uuidIndex].value);
+                    save(values, fields[uuidIndex].value);
                   }
                   // form.resetFields();
                 })
@@ -118,7 +112,7 @@ const DocForm: React.FC<Props> = (
               rules={[{required: true, message: 'Please select database'}]}
             >
               <Select placeholder="Please select database">
-                {DNSList.map((dns: any) => (<Option value={dns.name} >{dns.name}</Option>))}
+                {DSNList.map((dsn: any) => (<Option key={dsn.id} value={dsn.name} >{dsn.name}</Option>))}
               </Select>
             </FormItem>
           </Col>

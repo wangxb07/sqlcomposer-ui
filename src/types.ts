@@ -1,5 +1,5 @@
 export interface Doc {
-  uuid: string
+  id: string
   name: string
   content: string
   path: string
@@ -13,7 +13,7 @@ export interface DocumentList {
 }
 
 export interface DbConfig {
-  uuid: string
+  id: string
   name: string
   dsn: string
 }

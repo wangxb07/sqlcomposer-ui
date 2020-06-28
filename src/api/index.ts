@@ -1,5 +1,4 @@
 import axios from 'axios'
-import {string} from "prop-types";
 
 axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 
@@ -11,43 +10,43 @@ axios.interceptors.response.use((response) => {
 });
 
 export function getDocList() {
-  return axios.get("/doc")
+  return axios.get("/v1/doc")
 }
 
-export function getDoc(uuid: string) {
-  return axios.get(`/doc/${uuid}`)
+export function getDoc(id: string) {
+  return axios.get(`/v1/doc/${id}`)
 }
 
-export function saveDoc(data: FormData, uuid: string) {
-  return axios.post(`/doc/${uuid}`, data)
+export function saveDoc(data: any, id: string) {
+  return axios.patch(`/v1/doc/${id}`, data)
 }
 
-export function postDoc(data: FormData) {
-  return axios.post('/doc', data)
+export function postDoc(data: any) {
+  return axios.post('/v1/doc', data)
 }
 
-export function deleteDoc(uuid: string) {
-  return axios.delete(`/doc/${uuid}`)
+export function deleteDoc(id: string) {
+  return axios.delete(`/v1/doc/${id}`)
 }
 
-export function getDNSList() {
-  return axios.get(`/dns`)
+export function getDSNList() {
+  return axios.get(`/v1/dsn`)
 }
 
-export function getDNS(uuid: string) {
-  return axios.get(`/dns/${uuid}`)
+export function getDSN(id: string) {
+  return axios.get(`/v1/dsn/${id}`)
 }
 
-export function postDNS(data: FormData) {
-  return axios.post(`/dns`, data)
+export function postDSN(data: any) {
+  return axios.post(`/v1/dsn`, data)
 }
 
-export function saveDNS(data: FormData, uuid: string) {
-  return axios.post(`/dns/${uuid}`, data)
+export function saveDSN(data: any, id: string) {
+  return axios.post(`/v1/dsn/${id}`, data)
 }
 
-export function deleteDNS(uuid: string) {
-  return axios.delete(`/dns/${uuid}`)
+export function deleteDSN(id: string) {
+  return axios.delete(`/v1/dsn/${id}`)
 }
 
 export function query(path: string, filters: any) {

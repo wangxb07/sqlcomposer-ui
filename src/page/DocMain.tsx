@@ -7,7 +7,7 @@ import {FileAddOutlined, PlusSquareOutlined} from '@ant-design/icons';
 import {Dispatch, iRootState} from "../store";
 import {connect} from 'react-redux';
 import {Route} from "react-router";
-import DNSList from "../components/DNSList";
+import DNSList from "../components/DSNList";
 
 const {Sider, Content} = Layout;
 const {Panel} = Collapse;
@@ -19,9 +19,9 @@ const mapState = (state: iRootState) => ({});
 
 const mapDispatch = (dispatch: Dispatch) => ({
   showDocAddForm: dispatch.doc.showAddForm,
-  showDNSAddForm: dispatch.dns.showAddForm,
+  showDNSAddForm: dispatch.dsn.showAddForm,
   clearDocFormFields: dispatch.doc.clearFormFields,
-  clearDNSFormFields: dispatch.dns.clearFormFields,
+  clearDNSFormFields: dispatch.dsn.clearFormFields,
 });
 
 type connectedProps = ReturnType<typeof mapState> &

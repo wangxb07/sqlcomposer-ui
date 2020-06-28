@@ -11,7 +11,7 @@ const Search = Input.Search;
 interface DocIdentity {
   name: string
   path: string
-  uuid: string
+  id: string
 }
 
 const mapState = (state: iRootState) => ({
@@ -79,8 +79,8 @@ export class DocList extends Component<Props> {
         />
         <Menu theme="light">
           {this.props.docs.map((doc: DocIdentity) => (
-            <Menu.Item key={doc.uuid}>
-              <Link to={`/docs/${doc.uuid}`}>
+            <Menu.Item key={doc.id}>
+              <Link to={`/docs/${doc.id}`}>
               <span style={{
                 textDecoration: "underline"
               }}>{doc.path}</span> | {doc.name}

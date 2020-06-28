@@ -5,11 +5,11 @@ import {
   getDocList,
   postDoc,
   saveDoc,
-  getDNSList,
-  getDNS,
-  postDNS,
-  saveDNS,
-  deleteDNS,
+  getDSNList,
+  getDSN,
+  postDSN,
+  saveDSN,
+  deleteDSN,
   query
 } from "./api";
 import {ArgsProps} from "antd/lib/notification";
@@ -24,7 +24,7 @@ export interface FieldData {
 }
 
 export interface EntityDocument {
-  uuid: string
+  id: string
   name: string
   path: string
   content: string
@@ -58,6 +58,9 @@ const doc: ModelConfig = createModel<DocState>({
       }
     },
     setDoc: (state: DocState, doc: EntityDocument) => {
+      if (!doc.content) {
+        doc.content = ""
+      }
       return {
         ...state,
         doc
@@ -88,8 +91,8 @@ const doc: ModelConfig = createModel<DocState>({
         }),
       }
     },
-    removeItem: (state: DocState, uuid: string) => {
-      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid);
+    removeItem: (state: DocState, id: string) => {
+      const list = state.list.filter((item: EntityDocument) => item.id !== id);
       return {
         ...state,
         list
@@ -144,11 +147,11 @@ const doc: ModelConfig = createModel<DocState>({
         dispatch.doc.loaded(res.data.data)
       }
     },
-    async get(uuid: string) {
+    async get(id: string) {
       let res: any = {};
 
       try {
-        res = await getDoc(uuid);
+        res = await getDoc(id);
       } catch (e) {
         dispatch.msgbox.notification({
           message: "Document fetch failure",
@@ -160,7 +163,7 @@ const doc: ModelConfig = createModel<DocState>({
         dispatch.doc.setDoc(res.data)
       }
     },
-    async post(data: FormData) {
+    async post(data: any) {
       dispatch.doc.showLoading();
       try {
         const res = await postDoc(data);
@@ -185,13 +188,8 @@ const doc: ModelConfig = createModel<DocState>({
       let res: any = {};
       dispatch.doc.showLoading();
 
-      const formData: FormData = payload.data;
-      if (!formData.get("content")) {
-        formData.set("content", state.doc.doc.content)
-      }
-
       try {
-        res = await saveDoc(payload.data, payload.uuid)
+        res = await saveDoc(payload.data, payload.id)
       } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
@@ -204,15 +202,18 @@ const doc: ModelConfig = createModel<DocState>({
       }
 
       if (res && res.data) {
+        dispatch.msgbox.notification({
+          message: "Document save success",
+        });
         dispatch.doc.setDoc(res.data)
       }
       dispatch.doc.hideLoading();
     },
-    async delete(uuid: string) {
+    async delete(id: string) {
       let res: any = {};
       dispatch.doc.showLoading();
       try {
-        res = await deleteDoc(uuid);
+        res = await deleteDoc(id);
       } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
@@ -225,21 +226,21 @@ const doc: ModelConfig = createModel<DocState>({
       }
 
       if (res && res.data) {
-        dispatch.doc.removeItem(uuid);
+        dispatch.doc.removeItem(id);
       }
       dispatch.doc.hideLoading();
     },
   })
 });
 
-interface DNSState {
+interface DSNState {
   list: Array<any>
   drawerFormVisible: boolean
   formFields: FieldData[]
   loading: boolean
 }
 
-const dns: ModelConfig = createModel<DNSState>({
+const dsn: ModelConfig = createModel<DSNState>({
   state: {
     list: [],
     drawerFormVisible: false,
@@ -247,67 +248,73 @@ const dns: ModelConfig = createModel<DNSState>({
     loading: false
   },
   reducers: {
-    loaded: (state: DocState, list: any) => {
+    setDSN: (state, DSNState, dsn: any) => {
+      return {
+        ...state,
+        dsn
+      }
+    },
+    loaded: (state: DSNState, list: any) => {
       return {
         ...state,
         list,
         loading: false
       }
     },
-    showAddForm: (state: DocState) => {
+    showAddForm: (state: DSNState) => {
       return {
         ...state,
         drawerFormVisible: true,
         formFields: []
       }
     },
-    hideAddForm: (state: DocState) => {
+    hideAddForm: (state: DSNState) => {
       return {
         ...state,
         drawerFormVisible: false,
         formFields: []
       }
     },
-    edit: (state: DocState, doc: any) => {
+    edit: (state: DSNState, dsn: any) => {
       return {
         ...state,
         drawerFormVisible: true,
-        formFields: Object.keys(doc).map((k: string) => {
+        formFields: Object.keys(dsn).map((k: string) => {
           return {
             name: [k],
-            value: doc[k],
+            value: dsn[k],
           };
         }),
       }
     },
-    removeItem: (state: DocState, uuid: string) => {
-      const list = state.list.filter((item: EntityDocument) => item.uuid !== uuid);
+    removeItem: (state: DSNState, id: string) => {
+      const list = state.list.filter((item: EntityDocument) => item.id !== id);
       return {
         ...state,
         list
       }
     },
-    fillFormFields: (state: DocState, doc: any) => ({
+    fillFormFields: (state: DSNState, dsn: any) => ({
       ...state,
-      formFields: Object.keys(doc).map((k: string) => {
+      formFields: Object.keys(dsn).map((k: string) => {
         return {
           name: [k],
-          value: doc[k],
+          value: dsn[k],
         };
       }),
     }),
-    clearFormFields: (state: DocState) => {
+    clearFormFields: (state: DSNState) => {
       const formFields: FieldData[] = [];
       return {
         ...state,
         formFields
       }
     },
-    showLoading: (state: DocState) => ({
+    showLoading: (state: DSNState) => ({
       ...state,
       loading: true
     }),
-    hideLoading: (state: DocState) => ({
+    hideLoading: (state: DSNState) => ({
       ...state,
       loading: false
     }),
@@ -317,97 +324,97 @@ const dns: ModelConfig = createModel<DNSState>({
     async load() {
       let res: any = {};
       try {
-        res = await getDNSList();
+        res = await getDSNList();
       } catch (e) {
         dispatch.msgbox.notification({
-          message: "DNS list fetch failure",
+          message: "DSN list fetch failure",
           description: "Please check the Network and try again"
         })
       }
 
       if (res && res.data && res.data.data) {
-        dispatch.dns.loaded(res.data.data)
+        dispatch.dsn.loaded(res.data.data)
       }
     },
-    async get(uuid: string) {
+    async get(id: string) {
       let res: any = {};
 
       try {
-        res = await getDNS(uuid);
+        res = await getDSN(id);
       } catch (e) {
         dispatch.msgbox.notification({
-          message: "DNS fetch failure",
+          message: "DSN fetch failure",
           description: "Please check the Network and try again"
         })
       }
 
       if (res && res.data) {
-        dispatch.dns.setdns(res.data)
+        dispatch.dsn.setDSN(res.data)
       }
     },
-    async post(data: FormData) {
-      dispatch.dns.showLoading();
+    async post(data: any) {
+      dispatch.dsn.showLoading();
       try {
-        const res = await postDNS(data);
-        dispatch.dns.hideLoading();
+        const res = await postDSN(data);
+        dispatch.dsn.hideLoading();
       } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
-            message: "DNS add failure",
+            message: "DSN add failure",
             description: e.data.message
           });
         }
-        dispatch.dns.hideLoading();
+        dispatch.dsn.hideLoading();
         return
       }
 
-      await dispatch.dns.load();
-      dispatch.dns.hideLoading();
-      dispatch.dns.clearFormFields();
-      dispatch.dns.hideAddForm();
+      await dispatch.dsn.load();
+      dispatch.dsn.hideLoading();
+      dispatch.dsn.clearFormFields();
+      dispatch.dsn.hideAddForm();
     },
     async save(payload: any, state: any) {
       let res: any = {};
-      dispatch.dns.showLoading();
+      dispatch.dsn.showLoading();
 
       try {
-        res = await saveDNS(payload.data, payload.uuid)
+        res = await saveDSN(payload.data, payload.id)
       } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
-            message: "DNS save failure",
+            message: "DSN save failure",
             description: e.data.message
           });
         }
-        dispatch.dns.hideLoading();
+        dispatch.dsn.hideLoading();
         return
       }
 
       if (res && res.data) {
-        dispatch.dns.setdns(res.data)
+        dispatch.dsn.setDSN(res.data)
       }
-      dispatch.dns.hideLoading();
+      dispatch.dsn.hideLoading();
     },
-    async delete(uuid: string) {
+    async delete(id: string) {
       let res: any = {};
-      dispatch.dns.showLoading();
+      dispatch.dsn.showLoading();
       try {
-        res = await deleteDNS(uuid);
+        res = await deleteDSN(id);
       } catch (e) {
         if (e.data.code) {
           dispatch.msgbox.notification({
-            message: "DNS save failure",
+            message: "DSN save failure",
             description: e.data.message
           });
         }
-        dispatch.dns.hideLoading();
+        dispatch.dsn.hideLoading();
         return
       }
 
       if (res && res.data) {
-        dispatch.dns.removeItem(uuid);
+        dispatch.dsn.removeItem(id);
       }
-      dispatch.dns.hideLoading();
+      dispatch.dsn.hideLoading();
     },
   })
 });
@@ -436,7 +443,8 @@ let timeout: NodeJS.Timeout;
 const defaultParams = {
   filters: [],
   page_index: 1,
-  page_limit: 10
+  page_limit: 10,
+  sorts: []
 };
 
 const executor: ModelConfig = createModel<ExecutorState>({
@@ -536,9 +544,9 @@ const msgbox: ModelConfig = createModel<MsgBoxState>({
 // no need to extend from Models
 export interface RootModel {
   doc: typeof doc,
-  dns: typeof dns,
+  dsn: typeof dsn,
   msgbox: typeof msgbox,
   executor: typeof executor,
 }
 
-export const models: RootModel = {doc, dns, msgbox, executor};
+export const models: RootModel = {doc, dsn, msgbox, executor};

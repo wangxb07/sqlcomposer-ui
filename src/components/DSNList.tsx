@@ -2,30 +2,30 @@ import React, {Component} from "react";
 import {Button, Input, Menu, Popconfirm} from "antd";
 import {iRootState, Dispatch} from "../store";
 import {connect} from "react-redux";
-import DNSForm from "./DNSForm";
+import DNSForm from "./DSNForm";
 
 import {DeleteOutlined} from '@ant-design/icons';
 
 const Search = Input.Search;
 
 const mapState = (state: iRootState) => ({
-  docs: state.dns.list,
-  drawerFormVisible: state.dns.drawerFormVisible
+  docs: state.dsn.list,
+  drawerFormVisible: state.dsn.drawerFormVisible
 });
 
 const mapDispatch = (dispatch: Dispatch) => ({
-  showAddForm: dispatch.dns.showAddForm,
-  hideAddForm: dispatch.dns.hideAddForm,
-  deleteDNS: dispatch.dns.delete,
-  loadDocList: dispatch.dns.load,
-  postDoc: dispatch.dns.post,
+  showAddForm: dispatch.dsn.showAddForm,
+  hideAddForm: dispatch.dsn.hideAddForm,
+  deleteDNS: dispatch.dsn.delete,
+  loadDocList: dispatch.dsn.load,
+  postDoc: dispatch.dsn.post,
 });
 
 type connectedProps = ReturnType<typeof mapState> &
   ReturnType<typeof mapDispatch>
 type Props = connectedProps
 
-export class DNSList extends Component<Props> {
+export class DSNList extends Component<Props> {
   componentDidMount(): void {
     this.props.loadDocList()
   }
@@ -69,14 +69,14 @@ export class DNSList extends Component<Props> {
         />
         <Menu theme="light">
           {this.props.docs.map((dns: any) => (
-            <Menu.Item key={dns.uuid}>
+            <Menu.Item key={dns.id}>
               <div style={{
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center"
               }}>
                 {dns.name}
-                <Popconfirm placement="top" title="Delete confirm?" onConfirm={() => this.props.deleteDNS(dns.uuid)}
+                <Popconfirm placement="top" title="Delete confirm?" onConfirm={() => this.props.deleteDNS(dns.id)}
                             okText="Yes" cancelText="No">
                   <Button
                     size="small"
@@ -104,4 +104,4 @@ export class DNSList extends Component<Props> {
 }
 
 // @ts-ignore
-export default connect(mapState, mapDispatch)(DNSList)
+export default connect(mapState, mapDispatch)(DSNList)

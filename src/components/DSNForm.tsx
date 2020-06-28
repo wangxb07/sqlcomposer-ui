@@ -14,14 +14,14 @@ interface DrawerFormProps {
 }
 
 const mapState = (state: iRootState) => ({
-  fields: state.dns.formFields,
-  loading: state.dns.loading
+  fields: state.dsn.formFields,
+  loading: state.dsn.loading
 });
 
 const mapDispatch = (dispatch: Dispatch) => ({
-  post: dispatch.dns.post,
+  post: dispatch.dsn.post,
   save: (formData: FormData, uuid: string) => {
-    dispatch.dns.save({
+    dispatch.dsn.save({
       data: formData, uuid
     })
   }
@@ -30,7 +30,7 @@ const mapDispatch = (dispatch: Dispatch) => ({
 type connectedProps = ReturnType<typeof mapState> & ReturnType<typeof mapDispatch> & DrawerFormProps
 type Props = connectedProps
 
-const DNSForm: React.FC<Props> = (
+const DSNForm: React.FC<Props> = (
   {
     onClose,
     visible,
@@ -64,13 +64,7 @@ const DNSForm: React.FC<Props> = (
               form
                 .validateFields()
                 .then(values => {
-                  const formData = new FormData();
-
-                  Object.keys(values).forEach(k => {
-                    formData.append(k, values[k])
-                  });
-
-                  post(formData);
+                  post(values);
                   // form.resetFields();
                 })
                 .catch(info => {
@@ -105,8 +99,8 @@ const DNSForm: React.FC<Props> = (
         <Row gutter={16}>
           <Col span={24}>
             <FormItem
-              name="dns"
-              label="DNS"
+              name="dsn"
+              label="DSN"
               rules={[
                 {
                   required: true,
@@ -124,4 +118,4 @@ const DNSForm: React.FC<Props> = (
 };
 
 // @ts-ignore
-export default connect(mapState, mapDispatch)(DNSForm);
+export default connect(mapState, mapDispatch)(DSNForm);
